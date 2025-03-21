@@ -5,7 +5,7 @@ import pytz
 import asyncio
 import re
 
-# Bot ke admin ka Telegram ID (replace karein apne admin ID se)
+# Telegram ID of the bot admin (replace with your admin ID)
 ADMIN_ID = 6357920694
 
 # Approved users with expiration times
@@ -38,18 +38,18 @@ def is_user_authorized(user_id):
         return True, None
 
     if user_id not in approved_users:
-        return False, "🚫 Yᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴜᴛʜᴏʀɪᴢᴇᴅ. 🔄 Usᴇ /start ᴛᴏ ʀᴇǫᴜᴇsᴛ ᴀᴄᴄᴇss."
+        return False, "🚫 You are not authorized. 🔄 Use /start to request access."
 
     expiration_time = approved_users[user_id]
     current_time = datetime.now(pytz.UTC)
     if current_time >= expiration_time:
         del approved_users[user_id]  # Remove expired user
-        return False, "⏳ Yᴏᴜʀ ᴀᴜᴛʜᴏʀɪᴢᴀᴛɪᴏɴ ʜᴀs ᴇxᴘɪʀᴇᴅ. 🔄 Usᴇ /start ᴛᴏ ʀᴇǫᴜᴇsᴛ ɴᴇᴡ ᴀᴄᴄᴇss."
+        return False, "⏳ Your authorization has expired. 🔄 Use /start to request new access."
 
     return True, None
 
 async def delete_unauthorized_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Unauthorized users ka message delete karega"""
+    """Delete messages from unauthorized users"""
     user_id = str(update.message.chat_id)
     is_authorized, _ = is_user_authorized(user_id)
 
@@ -111,7 +111,7 @@ async def deny(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await context.bot.send_message(chat_id=user_id, text="❌ Request denied by admin.")
 
 async def any_message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Unauthorized users ka message delete karega"""
+    """Delete messages from unauthorized users"""
     await delete_unauthorized_message(update, context)
 
 if __name__ == "__main__":
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     application.add_handler(CommandHandler("approve", approve))
     application.add_handler(CommandHandler("deny", deny))
 
-    # ✅ Har unauthorized user ke normal messages delete karne ke liye
+    # ✅ Delete normal messages from unauthorized users
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, any_message_handler))
 
     print("Bot started. Press Ctrl+C to stop.")
